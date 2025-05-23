@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Tableau de Bord Administrateur</h2>
+<p>Bienvenue, {{ session.username }}!</p>
+<p>D'ici, vous pouvez gérer les comptes des managers.</p>
+<a href="{{ url_for('manage_managers') }}" class="btn btn-info">Gérer les Managers</a>
+{% endblock %}

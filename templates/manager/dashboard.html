@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Tableau de Bord Manager</h2>
+<p>Bienvenue sur le tableau de bord du manager, {{ session.username }}!</p>
+<p>Actions disponibles :</p>
+<ul>
+    <li><a href="{{ url_for('list_cars') }}" class="btn btn-primary">Gérer les Voitures</a></li>
+    <li><a href="{{ url_for('list_clients') }}" class="btn btn-primary">Gérer les Clients</a></li>
+    <li><a href="{{ url_for('list_reservations') }}" class="btn btn-primary">Gérer les Réservations</a></li>
+</ul>
+{% endblock %}

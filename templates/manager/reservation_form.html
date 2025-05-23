@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if action == 'new' %}Nouvelle Réservation{% else %}Modifier Réservation{% endif %}</h2>
+<form method="POST" action="{% if action == 'new' %}{{ url_for('new_reservation') }}{% else %}{{ url_for('edit_reservation', reservation_id=reservation._id) }}{% endif %}">
+    <div class="form-group">
+        <label for="client_id">Client</label>
+        <select class="form-control" id="client_id" name="client_id" required>
+            <option value="">-- Sélectionner un client --</option>
+            {% for client in clients %}
+            <option value="{{ client._id }}" {% if reservation and reservation.client_id == client._id %}selected{% endif %}>
+                {{ client.name }} ({{ client.email }})
+            </option>
+            {% endfor %}
+        </select>
+        <small><a href="{{ url_for('add_client') }}" target="_blank">Ajouter un nouveau client</a> (ouvre dans un nouvel onglet)</small>
+    </div>
+    <div class="form-group">
+        <label for="car_id">Voiture</label>
+        <select class="form-control" id="car_id" name="car_id" required>
+            <option value="">-- Sélectionner une voiture --</option>
+            {% for car in cars %}
+            <option value="{{ car._id }}" {% if reservation and reservation.car_id == car._id %}selected{% endif %}>
+                {{ car.make }} {{ car.model }} ({{ car.registration_number }}) - {{ "%.2f"|format(car.daily_rate) }}€/jour
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="start_date">Date de début</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ reservation.start_date.strftime('%Y-%m-%d') if reservation and reservation.start_date else '' }}" required>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="end_date">Date de fin</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ reservation.end_date.strftime('%Y-%m-%d') if reservation and reservation.end_date else '' }}" required>
+        </div>
+    </div>
+    <!-- Le prix total sera calculé côté serveur -->
+    <button type="submit" class="btn btn-primary">{% if action == 'new' %}Créer Réservation{% else %}Mettre à jour{% endif %}</button>
+    <a href="{{ url_for('list_reservations') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

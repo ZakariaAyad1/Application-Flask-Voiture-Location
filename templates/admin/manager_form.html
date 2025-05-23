@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if action == 'add' %}Ajouter un Manager{% else %}Modifier le Manager{% endif %}</h2>
+<form method="POST" action="{% if action == 'add' %}{{ url_for('add_manager') }}{% else %}{{ url_for('edit_manager', manager_id=manager._id) }}{% endif %}">
+    <div class="form-group">
+        <label for="username">Nom d'utilisateur</label>
+        <input type="text" class="form-control" id="username" name="username" value="{{ manager.username if manager else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Mot de passe {% if action == 'edit' %}(laisser vide pour ne pas changer){% endif %}</label>
+        <input type="password" class="form-control" id="password" name="password" {% if action == 'add' %}required{% endif %}>
+    </div>
+    <button type="submit" class="btn btn-primary">{% if action == 'add' %}Ajouter{% else %}Mettre à jour{% endif %}</button>
+    <a href="{{ url_for('manage_managers') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

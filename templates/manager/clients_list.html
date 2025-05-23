@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Gestion des Clients
+    <a href="{{ url_for('add_client') }}" class="btn btn-success float-right mb-3">Ajouter un Client</a>
+</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Adresse</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+        <tr>
+            <td>{{ client.name }}</td>
+            <td>{{ client.email }}</td>
+            <td>{{ client.phone }}</td>
+            <td>{{ client.address if client.address else 'N/A' }}</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-warning">Modifier</a> <!-- TODO: Implémenter edit_client -->
+                <form action="#" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr?');"> <!-- TODO: Implémenter delete_client -->
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">Aucun client trouvé.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
