@@ -225,7 +225,3 @@ Les contributions sont les bienvenues ! Veuillez suivre ces étapes :
 3.  Effectuer les modifications.
 4.  S'assurer que le code est propre et, si possible, testé.
 5.  Soumettre une Pull Request avec une description claire des changements.
-
-## Licence
-
-Ce projet est distribué sous la licence [NOM_DE_LA_LICENCE_CHOISIE, e.g., MIT]. Voir le fichier `LICENSE.md` pour plus de détails.
