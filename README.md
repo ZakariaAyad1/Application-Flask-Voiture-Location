@@ -1,6 +1,7 @@
 # Application de Gestion d'Agence de Location de Voitures
 
-![Uploading image.png…]()
+![Screenshot](Screenshot 2025-05-29 234659.png)
+
 
 
 Ce projet est une application web développée avec Flask (Python) et MongoDB, conçue pour gérer les opérations d'une agence de location de voitures. Elle permet la gestion des voitures, des clients, des réservations, et des comptes utilisateurs avec différents niveaux de privilèges (Administrateur et Manager).
