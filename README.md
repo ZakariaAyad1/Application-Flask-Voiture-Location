@@ -1,6 +1,5 @@
 # Application de Gestion d'Agence de Location de Voitures
 
-![Screenshot](Screenshot 2025-05-29 234659.png)
 
 
 
