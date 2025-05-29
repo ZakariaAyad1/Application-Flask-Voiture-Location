@@ -2,4 +2,4 @@ Flask
 pymongo
 python-dotenv
 werkzeug
-bcrypt # Pour le hachage des mots de passe
+Pillow

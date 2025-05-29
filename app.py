@@ -6,6 +6,7 @@ from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 load_dotenv() # Charge les variables de .env
@@ -22,6 +23,17 @@ users_collection = db.users
 cars_collection = db.cars
 clients_collection = db.clients
 reservations_collection = db.reservations
+
+# --- Configuration Uploads ---
+UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Créer le dossier uploads s'il n'existe pas
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- Helpers & Decorators ---
 def login_required(f):
@@ -170,22 +182,35 @@ def list_cars():
 @manager_required
 def add_car():
     if request.method == 'POST':
-        # TODO: Ajouter la validation des données
         make = request.form['make']
         model = request.form['model']
         year = int(request.form['year'])
         registration_number = request.form['registration_number']
         daily_rate = float(request.form['daily_rate'])
         status = request.form.get('status', 'available') # 'available' par défaut
-        image_url = request.form.get('image_url')
+        
+        # Gestion de l'image
+        image_url = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                # Ajouter un timestamp pour éviter les doublons
+                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                image_url = url_for('static', filename=f'uploads/{filename}')
 
         if cars_collection.find_one({'registration_number': registration_number}):
             flash('Une voiture avec ce numéro d\'immatriculation existe déjà.', 'danger')
         else:
             cars_collection.insert_one({
-                'make': make, 'model': model, 'year': year,
+                'make': make, 
+                'model': model, 
+                'year': year,
                 'registration_number': registration_number,
-                'daily_rate': daily_rate, 'status': status, 'image_url': image_url
+                'daily_rate': daily_rate, 
+                'status': status, 
+                'image_url': image_url
             })
             flash('Voiture ajoutée avec succès.', 'success')
             return redirect(url_for('list_cars'))
@@ -207,7 +232,16 @@ def edit_car(car_id):
         registration_number = request.form['registration_number']
         daily_rate = float(request.form['daily_rate'])
         status = request.form.get('status', car.get('status')) # Conserver l'ancien si non fourni
-        image_url = request.form.get('image_url', car.get('image_url'))
+        
+        # Gestion de l'image
+        image_url = car.get('image_url')  # Garder l'ancienne image par défaut
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                image_url = url_for('static', filename=f'uploads/{filename}')
         
         # Vérifier l'unicité de l'immatriculation si elle a changé
         existing_car = cars_collection.find_one({'registration_number': registration_number, '_id': {'$ne': ObjectId(car_id)}})
@@ -243,9 +277,6 @@ def list_clients():
     clients = list(clients_collection.find())
     return render_template('manager/clients_list.html', clients=clients)
 
-
-
-# ... (edit_client, delete_client similaires à ceux des voitures/managers) ...
 @app.route('/manager/clients/add', methods=['GET', 'POST'])
 @login_required
 @manager_required
@@ -282,19 +313,43 @@ def edit_client(client_id):
         phone = request.form['phone']
         address = request.form.get('address')
 
-        # Vérifier si l'email a changé et s'il est déjà utilisé par un AUTRE client
         if client['email'] != email and clients_collection.find_one({'email': email, '_id': {'$ne': ObjectId(client_id)}}):
             flash('Cet email est déjà utilisé par un autre client.', 'danger')
         else:
             clients_collection.update_one(
                 {'_id': ObjectId(client_id)},
-                {'$set': {'name': name, 'email': email, 'phone': phone, 'address': address}}
+                {'$set': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'address': address
+                }}
             )
             flash('Client mis à jour avec succès.', 'success')
             return redirect(url_for('list_clients'))
             
-    return render_template('manager/client_form.html', action="edit", client=client) # Passer action="edit" et l'objet client
+    return render_template('manager/client_form.html', action="edit", client=client)
 
+@app.route('/manager/clients/delete/<client_id>', methods=['POST'])
+@login_required
+@manager_required
+def delete_client(client_id):
+    # Vérifier si le client a des réservations actives
+    active_reservations = reservations_collection.find_one({
+        'client_id': ObjectId(client_id),
+        'status': {'$in': ['pending', 'confirmed']}
+    })
+    
+    if active_reservations:
+        flash('Impossible de supprimer ce client car il a des réservations actives.', 'danger')
+    else:
+        result = clients_collection.delete_one({'_id': ObjectId(client_id)})
+        if result.deleted_count > 0:
+            flash('Client supprimé avec succès.', 'success')
+        else:
+            flash('Client non trouvé.', 'danger')
+    
+    return redirect(url_for('list_clients'))
 
 # --- Gestion des Réservations (Manager) ---
 @app.route('/manager/reservations')
