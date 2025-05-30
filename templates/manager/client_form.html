@@ -1,44 +1,67 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>{% if action == 'add' %}Ajouter un Nouveau Client{% else %}Modifier le Client : {{ client.name }}{% endif %}</h2>
-<hr>
-
-<form method="POST" action="{% if action == 'add' %}{{ url_for('add_client') }}{% else %}{{ url_for('edit_client', client_id=client._id) }}{% endif %}">
-    <div class="form-group">
-        <label for="name">Nom complet</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{ client.name if client else '' }}" required>
+<div class="dashboard-container">
+    <div class="client-form-container">
+        <!-- Titre avec icône -->
+        <h1 class="client-form-title">
+            <i class="fas {% if action == 'add' %}fa-user-plus{% else %}fa-user-edit{% endif %}"></i>
+            {% if action == 'add' %}Ajouter un Nouveau Client{% else %}Modifier le Client : {{ client.name }}{% endif %}
+        </h1>
+        
+        <!-- Formulaire avec styles améliorés -->
+        <form method="POST" action="{% if action == 'add' %}{{ url_for('add_client') }}{% else %}{{ url_for('edit_client', client_id=client._id) }}{% endif %}" class="client-form">
+            <!-- Nom complet -->
+            <div class="form-group">
+                <label for="name">Nom complet</label>
+                <div class="position-relative">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" class="form-control form-control-with-icon" id="name" name="name" value="{{ client.name if client else '' }}" placeholder="Entrez le nom complet" required>
+                </div>
+            </div>
+            
+            <!-- Adresse email -->
+            <div class="form-group">
+                <label for="email">Adresse Email</label>
+                <div class="position-relative">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" class="form-control form-control-with-icon" id="email" name="email" value="{{ client.email if client else '' }}" placeholder="Entrez l'adresse email" required>
+                </div>
+                {% if action == 'edit' and client and client.email %}
+                <small class="form-text text-muted">Email actuel : {{ client.email }}</small>
+                {% endif %}
+            </div>
+            
+            <!-- Numéro de téléphone -->
+            <div class="form-group">
+                <label for="phone">Numéro de téléphone</label>
+                <div class="position-relative">
+                    <i class="fas fa-phone input-icon"></i>
+                    <input type="tel" class="form-control form-control-with-icon" id="phone" name="phone" value="{{ client.phone if client else '' }}" placeholder="Entrez le numéro de téléphone" required>
+                </div>
+            </div>
+            
+            <!-- Adresse -->
+            <div class="form-group">
+                <label for="address">Adresse (optionnel)</label>
+                <div class="position-relative">
+                    <i class="fas fa-map-marker-alt input-icon" style="top: 15px;"></i>
+                    <textarea class="form-control form-control-with-icon" id="address" name="address" rows="3" placeholder="Entrez l'adresse complète">{{ client.address if client and client.address else '' }}</textarea>
+                </div>
+            </div>
+            
+            <!-- Boutons d'action -->
+            <div class="form-buttons">
+                <button type="submit" class="client-btn">
+                    <i class="fas {% if action == 'add' %}fa-plus-circle{% else %}fa-save{% endif %}"></i>
+                    {% if action == 'add' %}Ajouter le Client{% else %}Enregistrer les modifications{% endif %}
+                </button>
+                <a href="{{ url_for('list_clients') }}" class="cancel-client-btn">
+                    <i class="fas fa-times-circle"></i> Annuler
+                </a>
+            </div>
+        </form>
     </div>
-
-    <div class="form-group">
-        <label for="email">Adresse Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="{{ client.email if client else '' }}" required>
-        {% if action == 'edit' and client and client.email %}
-        <small class="form-text text-muted">Email actuel : {{ client.email }}</small>
-        {% endif %}
-    </div>
-
-    <div class="form-group">
-        <label for="phone">Numéro de téléphone</label>
-        <input type="tel" class="form-control" id="phone" name="phone" value="{{ client.phone if client else '' }}" required>
-        <!-- Vous pourriez ajouter des validations de format de téléphone plus tard si besoin -->
-    </div>
-
-    <div class="form-group">
-        <label for="address">Adresse (optionnel)</label>
-        <textarea class="form-control" id="address" name="address" rows="3">{{ client.address if client and client.address else '' }}</textarea>
-    </div>
-
-    <button type="submit" class="btn btn-primary">
-        {% if action == 'add' %}
-            <i class="fas fa-plus-circle"></i> Ajouter le Client
-        {% else %}
-            <i class="fas fa-save"></i> Enregistrer les modifications
-        {% endif %}
-    </button>
-    <a href="{{ url_for('list_clients') }}" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Annuler
-    </a>
-</form>
+</div>
 
 {% endblock %}

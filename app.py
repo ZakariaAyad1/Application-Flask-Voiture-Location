@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from functools import wraps
 from bson import ObjectId
+from werkzeug.utils import secure_filename
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from pymongo import MongoClient
@@ -22,6 +23,18 @@ users_collection = db.users
 cars_collection = db.cars
 clients_collection = db.clients
 reservations_collection = db.reservations
+
+# Configuration pour l'upload des images
+UPLOAD_FOLDER = 'static/uploads/cars'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Créer le dossier d'upload s'il n'existe pas
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # --- Helpers & Decorators ---
 def login_required(f):
@@ -60,7 +73,7 @@ def login():
             session['user_id'] = str(user['_id'])
             session['username'] = user['username']
             session['role'] = user['role']
-            flash('Connexion réussie!', 'success')
+            # Message de connexion réussie supprimé pour une meilleure expérience utilisateur
             if user['role'] == 'admin':
                 return redirect(url_for('admin_dashboard'))
             elif user['role'] == 'manager':
@@ -73,7 +86,7 @@ def login():
 @login_required
 def logout():
     session.clear()
-    flash('Vous avez été déconnecté.', 'info')
+    # Message de déconnexion supprimé pour une meilleure expérience utilisateur
     return redirect(url_for('login'))
 
 # --- Routes Administrateur ---
@@ -81,7 +94,27 @@ def logout():
 @login_required
 @admin_required
 def admin_dashboard():
-    return render_template('admin/dashboard.html')
+    # Récupérer les données réelles de la base de données
+    managers_count = users_collection.count_documents({'role': 'manager'})
+    cars_count = cars_collection.count_documents({})
+    clients_count = clients_collection.count_documents({})
+    
+    # Calculer les revenus totaux à partir des réservations
+    total_revenue = 0
+    reservations = reservations_collection.find({'status': 'completed'})
+    for reservation in reservations:
+        if 'total_price' in reservation:
+            total_revenue += reservation['total_price']
+    
+    # Récupérer quelques managers pour affichage
+    managers = list(users_collection.find({'role': 'manager'}).limit(5))
+    
+    return render_template('admin/dashboard.html', 
+                           managers_count=managers_count,
+                           cars_count=cars_count,
+                           clients_count=clients_count,
+                           total_revenue=total_revenue,
+                           managers=managers)
 
 @app.route('/admin/managers')
 @login_required
@@ -155,9 +188,49 @@ def delete_manager(manager_id):
 @login_required
 @manager_required
 def manager_dashboard():
-    return render_template('manager/dashboard.html')
+    # Récupérer les statistiques pour le tableau de bord
+    cars_count = cars_collection.count_documents({})
+    clients_count = clients_collection.count_documents({})
+    reservations_count = reservations_collection.count_documents({})
+    
+    # Statistiques des voitures par statut
+    available_cars = cars_collection.count_documents({'status': 'available'})
+    rented_cars = cars_collection.count_documents({'status': 'rented'})
+    maintenance_cars = cars_collection.count_documents({'status': 'maintenance'})
+    
+    # Calculer les revenus totaux (somme des réservations complétées)
+    revenue_pipeline = [
+        {'$match': {'status': 'completed'}},
+        {'$group': {'_id': None, 'total': {'$sum': '$total_price'}}}
+    ]
+    revenue_result = list(reservations_collection.aggregate(revenue_pipeline))
+    revenue = revenue_result[0]['total'] if revenue_result else 0
+    
+    # Récupérer les réservations récentes (5 dernières)
+    recent_reservations_raw = list(reservations_collection.find().sort('_id', -1).limit(5))
+    recent_reservations = []
+    
+    for res in recent_reservations_raw:
+        car = cars_collection.find_one({'_id': res['car_id']})
+        client = clients_collection.find_one({'_id': res['client_id']})
+        res['car_info'] = f"{car['make']} {car['model']}" if car else "Voiture Inconnue"
+        res['client_name'] = client['name'] if client else "Client Inconnu"
+        recent_reservations.append(res)
+    
+    # Date actuelle pour l'affichage
+    now = datetime.now()
+    
+    return render_template('manager/dashboard.html',
+                          cars_count=cars_count,
+                          clients_count=clients_count,
+                          reservations_count=reservations_count,
+                          available_cars=available_cars,
+                          rented_cars=rented_cars,
+                          maintenance_cars=maintenance_cars,
+                          revenue=revenue,
+                          recent_reservations=recent_reservations,
+                          now=now)
 
-# --- Gestion des Voitures (Manager) ---
 @app.route('/manager/cars')
 @login_required
 @manager_required
@@ -170,14 +243,22 @@ def list_cars():
 @manager_required
 def add_car():
     if request.method == 'POST':
-        # TODO: Ajouter la validation des données
         make = request.form['make']
         model = request.form['model']
         year = int(request.form['year'])
         registration_number = request.form['registration_number']
         daily_rate = float(request.form['daily_rate'])
-        status = request.form.get('status', 'available') # 'available' par défaut
-        image_url = request.form.get('image_url')
+        status = request.form.get('status', 'available')
+        
+        # Gestion de l'upload d'image
+        image_url = None
+        if 'car_image' in request.files:
+            file = request.files['car_image']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                image_url = '/' + filepath.replace('\\', '/')
 
         if cars_collection.find_one({'registration_number': registration_number}):
             flash('Une voiture avec ce numéro d\'immatriculation existe déjà.', 'danger')
@@ -185,7 +266,8 @@ def add_car():
             cars_collection.insert_one({
                 'make': make, 'model': model, 'year': year,
                 'registration_number': registration_number,
-                'daily_rate': daily_rate, 'status': status, 'image_url': image_url
+                'daily_rate': daily_rate, 'status': status,
+                'image_url': image_url
             })
             flash('Voiture ajoutée avec succès.', 'success')
             return redirect(url_for('list_cars'))
@@ -207,8 +289,21 @@ def edit_car(car_id):
         registration_number = request.form['registration_number']
         daily_rate = float(request.form['daily_rate'])
         status = request.form.get('status', car.get('status')) # Conserver l'ancien si non fourni
-        image_url = request.form.get('image_url', car.get('image_url'))
         
+        # Gestion de l'upload d'image
+        image_url = car.get('image_url')  # Garder l'ancienne image par défaut
+        if 'car_image' in request.files:
+            file = request.files['car_image']
+            if file and allowed_file(file.filename):
+                # Supprimer l'ancienne image si elle existe
+                if image_url and os.path.exists('.' + image_url):
+                    os.remove('.' + image_url)
+                
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                image_url = '/' + filepath.replace('\\', '/')
+
         # Vérifier l'unicité de l'immatriculation si elle a changé
         existing_car = cars_collection.find_one({'registration_number': registration_number, '_id': {'$ne': ObjectId(car_id)}})
         if existing_car:
@@ -294,6 +389,18 @@ def edit_client(client_id):
             return redirect(url_for('list_clients'))
             
     return render_template('manager/client_form.html', action="edit", client=client) # Passer action="edit" et l'objet client
+
+
+@app.route('/manager/clients/delete/<client_id>', methods=['POST'])
+@login_required
+@manager_required
+def delete_client(client_id):
+    result = clients_collection.delete_one({'_id': ObjectId(client_id)})
+    if result.deleted_count > 0:
+        flash('Client supprimé avec succès.', 'success')
+    else:
+        flash('Client non trouvé ou non supprimé.', 'danger')
+    return redirect(url_for('list_clients'))
 
 
 # --- Gestion des Réservations (Manager) ---
@@ -399,7 +506,13 @@ def manage_reservation_status(reservation_id, action):
 
 
 # --- Visualisation des voitures disponibles (Publique ou Manager) ---
-@app.route('/') # Page d'accueil, pourrait être la liste des voitures disponibles
+@app.route('/') # Page d'accueil avec carrousel et présentation
+# @login_required # Décommentez si seuls les utilisateurs connectés peuvent voir
+def home():
+    # Critère simple de disponibilité. Pourrait être affiné en vérifiant les réservations.
+    available_cars = list(cars_collection.find({'status': 'available'}))
+    return render_template('available_cars.html', cars=available_cars)
+
 @app.route('/cars/available')
 # @login_required # Décommentez si seuls les utilisateurs connectés peuvent voir
 def view_available_cars():
@@ -415,7 +528,7 @@ def view_available_cars():
     # })
     # ]
     # available_cars = list(cars_collection.find({'_id': {'$nin': non_available_car_ids}}))
-    return render_template('manager/cars_list.html', cars=available_cars, public_view=True)
+    return render_template('cars_list_only.html', cars=available_cars)
 
 
 # --- Script pour créer le premier admin (si aucun utilisateur n'existe) ---
@@ -434,5 +547,5 @@ def create_initial_admin():
         print("Des utilisateurs existent déjà. Aucun admin initial créé.")
 
 if __name__ == '__main__':
-    # create_initial_admin() # Décommentez pour créer l'admin au premier lancement
+    #create_initial_admin() # Création de l'admin au premier lancement
     app.run(debug=True)

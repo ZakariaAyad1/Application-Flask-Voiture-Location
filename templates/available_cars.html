@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Supprimer les marges et paddings pour permettre au contenu d'occuper tout l'écran */
+    body, html {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .container-fluid, .container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+    }
+    nav {
+        width: 100% !important;
+    }
+    .hero-section {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+    .carousel, .carousel-inner, .carousel-item {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+</style>
+
+<!-- Hero Section avec Carrousel Intégré et Animation -->
+<section class="hero-section position-relative" style="margin: 0; padding: 0; width: 100vw; overflow: hidden; max-width: 100%; left: 0; right: 0;">
+    <div id="carouselVoitures" class="carousel slide carousel-fade" data-ride="carousel" data-interval="5000" style="margin: 0; padding: 0; width: 100vw; max-width: 100%; height: 100vh;">
+        <ol class="carousel-indicators">
+            <li data-target="#carouselVoitures" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselVoitures" data-slide-to="1"></li>
+            <li data-target="#carouselVoitures" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner" style="margin: 0; padding: 0; width: 100vw; max-width: 100%; height: 100vh;">
+            <div class="carousel-item active" style="width: 100vw; max-width: 100%; height: 100vh;">
+                <div style="position: relative; width: 100vw; height: 100vh;">
+                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80" style="width: 100vw; height: 100vh; object-fit: cover; filter: brightness(0.8); display: block; margin: 0; padding: 0;" alt="Voiture de luxe">
+                </div>
+            </div>
+            <div class="carousel-item" style="width: 100vw; max-width: 100%; height: 100vh;">
+                <div style="position: relative; width: 100vw; height: 100vh;">
+                    <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80" style="width: 100vw; height: 100vh; object-fit: cover; filter: brightness(0.8); display: block; margin: 0; padding: 0;" alt="Voiture sportive">
+                </div>
+            </div>
+            <div class="carousel-item" style="width: 100vw; max-width: 100%; height: 100vh;">
+                <div style="position: relative; width: 100vw; height: 100vh;">
+                    <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80" style="width: 100vw; height: 100vh; object-fit: cover; filter: brightness(0.8); display: block; margin: 0; padding: 0;" alt="Voiture sportive rouge">
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselVoitures" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Précédent</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselVoitures" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Suivant</span>
+        </a>
+    </div>
+</section>
+
+<!-- Styles pour les animations -->
+<style>
+    .animated-text {
+        animation: fadeInDown 1.5s;
+    }
+    
+    .hero-buttons {
+        animation: fadeInUp 1.5s;
+    }
+    
+    .pulse-button {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.7);
+        }
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
+        }
+    }
+</style>
+
+<!-- Section Présentation -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="p-4 bg-white rounded shadow-sm">
+                    <h2 class="font-weight-bold mb-4" style="color: var(--primary-color);">NOTRE FLOTTE DE VÉHICULES</h2>
+                    <p class="lead mb-4">Des modèles modernes, confortables et économiques pour tous vos déplacements professionnels et personnels.</p>
+                    <p class="mb-4">Nous proposons une large gamme de véhicules pour tous vos besoins. Que ce soit pour un voyage d'affaires, des vacances en famille ou une occasion spéciale, nous avons le véhicule parfait pour vous.</p>
+                    <a href="{{ url_for('view_available_cars') }}" class="btn btn-primary"><i class="fas fa-arrow-right mr-2"></i>Voir tous nos véhicules</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-6 mb-4">
+                        <div class="rounded overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="img-fluid" alt="Intérieur de voiture" style="width: 100%; height: 200px; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <div class="rounded overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1550355291-bbee04a92027?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="img-fluid" alt="Voiture de luxe" style="width: 100%; height: 200px; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="rounded overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="img-fluid" alt="Voiture sportive" style="width: 100%; height: 200px; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="rounded overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="img-fluid" alt="Voiture élégante" style="width: 100%; height: 200px; object-fit: cover;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Avantages -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="font-weight-bold mb-3">Pourquoi nous choisir ?</h2>
+                <p class="lead">Découvrez les avantages qui font de notre service de location une référence</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm hover-effect">
+                    <div class="card-body text-center p-5">
+                        <div class="icon-wrapper mb-4" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-money-bill-wave fa-3x text-primary"></i>
+                        </div>
+                        <h4 class="card-title font-weight-bold">Tarifs compétitifs</h4>
+                        <p class="card-text">Nous proposons des tarifs avantageux pour tous nos véhicules, avec des options flexibles adaptées à vos besoins.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm hover-effect">
+                    <div class="card-body text-center p-5">
+                        <div class="icon-wrapper mb-4" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-car fa-3x text-primary"></i>
+                        </div>
+                        <h4 class="card-title font-weight-bold">Véhicules récents</h4>
+                        <p class="card-text">Notre flotte est composée de véhicules récents, régulièrement entretenus pour vous garantir confort et sécurité.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm hover-effect">
+                    <div class="card-body text-center p-5">
+                        <div class="icon-wrapper mb-4" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-headset fa-3x text-primary"></i>
+                        </div>
+                        <h4 class="card-title font-weight-bold">Service client</h4>
+                        <p class="card-text">Notre équipe est à votre disposition pour vous accompagner et répondre à toutes vos questions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Call-to-Action -->
+<section class="py-0" style="background: linear-gradient(90deg, #1a1a1a 0%, #333333 100%); position: relative; overflow: hidden;">
+    <!-- Formes décoratives -->
+    <div style="position: absolute; width: 300px; height: 300px; background: rgba(255,0,0,0.05); border-radius: 50%; top: -150px; right: -50px;"></div>
+    <div style="position: absolute; width: 200px; height: 200px; background: rgba(255,0,0,0.05); border-radius: 50%; bottom: -100px; left: 10%;"></div>
+    
+    <div class="container">
+        <div class="row align-items-center py-5" style="min-height: 250px;">
+            <div class="col-lg-7 mb-5 mb-lg-0 text-white">
+                <h2 class="font-weight-bold mb-4" style="font-size: 2.5rem; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); color: #1e3a8a;">Prêt à prendre la route ?</h2>
+                <div class="separator mb-4" style="width: 80px; height: 4px; background-color: #ff0000;"></div>
+                <p class="lead mb-0" style="font-size: 1.3rem; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); color: #1e3a8a;">Découvrez notre sélection de véhicules et réservez dès maintenant pour votre prochain voyage.</p>
+            </div>
+            <div class="col-lg-5 text-center text-lg-right">
+                <a href="{{ url_for('view_available_cars') }}" class="btn px-5 py-3" style="background-color: #ff0000; color: white; border-radius: 50px; font-weight: 600; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+                    <i class="fas fa-car-side mr-2"></i>VOIR NOS VÉHICULES
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Ajout de CSS pour les effets de survol -->
+<style>
+    .hover-effect {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-effect:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+
+{% endblock %}

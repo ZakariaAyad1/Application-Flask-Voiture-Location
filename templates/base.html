@@ -5,57 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agence de Location de Voiture</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="{{ url_for('view_available_cars') }}">Agence Auto</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('view_available_cars') }}">Voitures Disponibles</a>
-                </li>
-                {% if session.user_id %}
-                    {% if session.role == 'admin' %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard Admin</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_managers') }}">Gérer Managers</a></li>
-                    {% elif session.role == 'manager' %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('manager_dashboard') }}">Dashboard Manager</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('list_cars') }}">Gérer Voitures</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('list_clients') }}">Gérer Clients</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('list_reservations') }}">Gérer Réservations</a></li>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            {% if session.user_id %}
+            <a class="navbar-brand" href="{{ url_for('view_available_cars') }}">Agence Auto Premium</a>
+            {% else %}
+            <span class="navbar-brand">Agence Auto Premium</span>
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    {% if session.user_id %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_available_cars') }}">Voitures disponibles</a>
+                    </li>
+                        {% if session.role == 'admin' %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard Admin</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_managers') }}"><i class="fas fa-users-cog mr-1"></i> Gérer Managers</a></li>
+                        {% elif session.role == 'manager' %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('manager_dashboard') }}"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard Manager</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('list_cars') }}"><i class="fas fa-car mr-1"></i> Gérer Voitures</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('list_clients') }}"><i class="fas fa-user-friends mr-1"></i> Gérer Clients</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('list_reservations') }}"><i class="fas fa-calendar-check mr-1"></i> Gérer Réservations</a></li>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-            </ul>
-            <ul class="navbar-nav">
-                {% if session.user_id %}
-                    <li class="nav-item"><span class="navbar-text mr-3">Bonjour, {{ session.username }} ({{ session.role }})</span></li>
-                    <li class="nav-item"><a class="nav-link btn btn-outline-light" href="{{ url_for('logout') }}">Déconnexion</a></li>
-                {% else %}
-                    <li class="nav-item"><a class="nav-link btn btn-outline-light" href="{{ url_for('login') }}">Connexion</a></li>
-                {% endif %}
-            </ul>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if session.user_id %}
+                        <li class="nav-item"><span class="navbar-text mr-3"><i class="fas fa-user-circle mr-1"></i> Bonjour, {{ session.username }} ({{ session.role }})</span></li>
+                        <li class="nav-item"><a class="nav-link btn btn-outline-light" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt mr-1"></i> Déconnexion</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link btn btn-outline-light" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt mr-1"></i> Connexion</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
-    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container mt-4">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    
+    {% block content %}{% endblock %}
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>

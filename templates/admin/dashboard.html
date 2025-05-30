@@ -1,7 +1,97 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Tableau de Bord Administrateur</h2>
-<p>Bienvenue, {{ session.username }}!</p>
-<p>D'ici, vous pouvez gérer les comptes des managers.</p>
-<a href="{{ url_for('manage_managers') }}" class="btn btn-info">Gérer les Managers</a>
+<div class="dashboard-container admin-dashboard">
+    <!-- Carte d'accueil avec dégradé et formes décoratives -->
+    <div class="admin-welcome-card">
+        <h1 class="admin-welcome-title">Tableau de Bord Administrateur</h1>
+        <p class="admin-welcome-text">Bienvenue, {{ session.username }}! D'ici, vous pouvez gérer les comptes des managers et superviser l'ensemble des activités de l'agence.</p>
+        <a href="{{ url_for('manage_managers') }}" class="admin-action-button">
+            <i class="fas fa-users-cog mr-2"></i>GÉRER LES MANAGERS
+        </a>
+    </div>
+
+    <!-- Statistiques avec icônes -->
+    <div class="admin-stats-container">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">{{ managers_count|default(1) }}</div>
+                <div class="admin-stat-label">Managers</div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">{{ cars_count|default(5) }}</div>
+                <div class="admin-stat-label">Véhicules</div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+                <i class="fas fa-user-friends"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">{{ clients_count|default(10) }}</div>
+                <div class="admin-stat-label">Clients</div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">{{ total_revenue|default('2580') }} €</div>
+                <div class="admin-stat-label">Revenus</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section de gestion des managers -->
+    <div class="admin-section">
+        <div class="admin-section-header">
+            <h2 class="admin-section-title">Gestion des Managers</h2>
+            <a href="{{ url_for('manage_managers') }}" class="view-all">Voir tout</a>
+        </div>
+        <div class="admin-section-content">
+            <div class="admin-manager-list">
+                {% if managers %}
+                    {% for manager in managers %}
+                    <div class="admin-manager-card">
+                        <div class="admin-manager-name">{{ manager.username }}</div>
+                        <div class="admin-manager-email">{{ manager.email }}</div>
+                        <div class="admin-manager-actions">
+                            <a href="{{ url_for('edit_manager', manager_id=manager._id) }}" class="admin-manager-edit">
+                                <i class="fas fa-edit mr-1"></i>Modifier
+                            </a>
+                            <a href="{{ url_for('delete_manager', manager_id=manager._id) }}" class="admin-manager-delete" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce manager ?');">
+                                <i class="fas fa-trash-alt mr-1"></i>Supprimer
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="admin-manager-card">
+                        <div class="admin-manager-name">Hicham</div>
+                        <div class="admin-manager-email">hicham@example.com</div>
+                        <div class="admin-manager-actions">
+                            <a href="#" class="admin-manager-edit">
+                                <i class="fas fa-edit mr-1"></i>Modifier
+                            </a>
+                            <a href="#" class="admin-manager-delete" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce manager ?');">
+                                <i class="fas fa-trash-alt mr-1"></i>Supprimer
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,16 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{% if action == 'add' %}Ajouter un Manager{% else %}Modifier le Manager{% endif %}</h2>
-<form method="POST" action="{% if action == 'add' %}{{ url_for('add_manager') }}{% else %}{{ url_for('edit_manager', manager_id=manager._id) }}{% endif %}">
-    <div class="form-group">
-        <label for="username">Nom d'utilisateur</label>
-        <input type="text" class="form-control" id="username" name="username" value="{{ manager.username if manager else '' }}" required>
+<div class="dashboard-container">
+    <div class="manager-form-container">
+        <!-- Titre avec icône -->
+        <h1 class="manager-form-title">
+            <i class="fas {% if action == 'add' %}fa-user-plus{% else %}fa-user-edit{% endif %}"></i>
+            {% if action == 'add' %}Ajouter un Manager{% else %}Modifier le Manager{% endif %}
+        </h1>
+        
+        <!-- Formulaire avec icônes et styles améliorés -->
+        <form method="POST" action="{% if action == 'add' %}{{ url_for('add_manager') }}{% else %}{{ url_for('edit_manager', manager_id=manager._id) }}{% endif %}" class="manager-form">
+            <!-- Champ nom d'utilisateur -->
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur</label>
+                <div class="position-relative">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" class="form-control form-control-with-icon" id="username" name="username" value="{{ manager.username if manager else '' }}" placeholder="Entrez le nom d'utilisateur" required>
+                </div>
+            </div>
+            
+            <!-- Champ email (nouveau) -->
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="position-relative">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" class="form-control form-control-with-icon" id="email" name="email" value="{{ manager.email if manager and manager.email else '' }}" placeholder="Entrez l'adresse email">
+                </div>
+            </div>
+            
+            <!-- Champ mot de passe -->
+            <div class="form-group">
+                <label for="password">Mot de passe {% if action == 'edit' %}(laisser vide pour ne pas changer){% endif %}</label>
+                <div class="position-relative">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" class="form-control form-control-with-icon" id="password" name="password" placeholder="Entrez le mot de passe" {% if action == 'add' %}required{% endif %}>
+                </div>
+                {% if action == 'edit' %}
+                <p class="password-info">Laissez ce champ vide si vous ne souhaitez pas modifier le mot de passe actuel.</p>
+                {% endif %}
+            </div>
+            
+            <!-- Boutons d'action -->
+            <div class="manager-form-buttons">
+                <button type="submit" class="add-btn">
+                    <i class="fas {% if action == 'add' %}fa-plus-circle{% else %}fa-save{% endif %}"></i>
+                    {% if action == 'add' %}Ajouter le manager{% else %}Enregistrer les modifications{% endif %}
+                </button>
+                <a href="{{ url_for('manage_managers') }}" class="cancel-btn">
+                    <i class="fas fa-times-circle"></i> Annuler
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="form-group">
-        <label for="password">Mot de passe {% if action == 'edit' %}(laisser vide pour ne pas changer){% endif %}</label>
-        <input type="password" class="form-control" id="password" name="password" {% if action == 'add' %}required{% endif %}>
-    </div>
-    <button type="submit" class="btn btn-primary">{% if action == 'add' %}Ajouter{% else %}Mettre à jour{% endif %}</button>
-    <a href="{{ url_for('manage_managers') }}" class="btn btn-secondary">Annuler</a>
-</form>
+</div>
 {% endblock %}

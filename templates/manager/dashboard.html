@@ -1,11 +1,186 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Tableau de Bord Manager</h2>
-<p>Bienvenue sur le tableau de bord du manager, {{ session.username }}!</p>
-<p>Actions disponibles :</p>
-<ul>
-    <li><a href="{{ url_for('list_cars') }}" class="btn btn-primary">Gérer les Voitures</a></li>
-    <li><a href="{{ url_for('list_clients') }}" class="btn btn-primary">Gérer les Clients</a></li>
-    <li><a href="{{ url_for('list_reservations') }}" class="btn btn-primary">Gérer les Réservations</a></li>
-</ul>
+<div class="dashboard-container">
+    <div class="welcome-section">
+        <h1 class="welcome-title">
+            <i class="fas fa-tachometer-alt"></i> Tableau de Bord Manager
+        </h1>
+        <p class="welcome-subtitle">Bienvenue, <strong>{{ session.username }}</strong> | {{ now.strftime('%d %B %Y') }}</p>
+        <a href="{{ url_for('new_reservation') }}" class="add-btn">
+            <i class="fas fa-plus-circle"></i> Nouvelle Réservation
+        </a>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="stat-value">{{ cars_count }}</div>
+            <div class="stat-label">VOITURES</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-value">{{ clients_count }}</div>
+            <div class="stat-label">CLIENTS</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-value">{{ reservations_count }}</div>
+            <div class="stat-label">RÉSERVATIONS</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <div class="stat-value">{{ total_revenue|default('0') }} €</div>
+            <div class="stat-label">REVENUS</div>
+        </div>
+    </div>
+
+    <!-- Section statut des véhicules -->
+    <div class="status-section">
+        <h2 class="status-title"><i class="fas fa-car-alt"></i> Statut des Véhicules</h2>
+        <div class="status-cards">
+            <div class="vehicle-status-card status-available-card">
+                <i class="fas fa-check-circle fa-2x"></i>
+                <div class="status-count">{{ available_cars|default('0') }}</div>
+                <div class="status-text">DISPONIBLES</div>
+            </div>
+            
+            <div class="vehicle-status-card status-rented-card">
+                <i class="fas fa-clock fa-2x"></i>
+                <div class="status-count">{{ rented_cars|default('0') }}</div>
+                <div class="status-text">LOUÉES</div>
+            </div>
+            
+            <div class="vehicle-status-card status-maintenance-card">
+                <i class="fas fa-tools fa-2x"></i>
+                <div class="status-count">{{ maintenance_cars|default('0') }}</div>
+                <div class="status-text">MAINTENANCE</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sections de gestion -->
+    <div class="dashboard-sections">
+        <!-- Section de gestion des voitures -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-car-side"></i> Gestion des Voitures</h2>
+                <a href="{{ url_for('list_cars') }}" class="section-link">Voir tout <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="section-content">
+                <a href="{{ url_for('add_car') }}" class="dashboard-action-btn">
+                    <i class="fas fa-plus-circle"></i> Ajouter une Voiture
+                </a>
+            </div>
+        </div>
+        
+        <!-- Section de gestion des clients -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-users"></i> Gestion des Clients</h2>
+                <a href="{{ url_for('list_clients') }}" class="section-link">Voir tout <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="section-content">
+                <div class="client-info">
+                    <div class="client-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="client-count">{{ clients_count }}</div>
+                    <div class="client-label">CLIENTS ACTIFS</div>
+                </div>
+                <a href="{{ url_for('add_client') }}" class="dashboard-action-btn">
+                    <i class="fas fa-user-plus"></i> Ajouter un Client
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section des réservations récentes -->
+    <div class="dashboard-section reservations-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Réservations Récentes</h2>
+            <a href="{{ url_for('list_reservations') }}" class="section-link">Gérer les réservations <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        {% if recent_reservations %}
+        <table class="management-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Voiture</th>
+                    <th>Dates</th>
+                    <th>Prix</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in recent_reservations %}
+                <tr>
+                    <td><strong>{{ res.client_name }}</strong></td>
+                    <td>{{ res.car_info }}</td>
+                    <td>{{ res.start_date.strftime('%d/%m/%Y') }} - {{ res.end_date.strftime('%d/%m/%Y') }}</td>
+                    <td><strong>{{ "%.2f"|format(res.total_price) }} €</strong></td>
+                    <td>
+                        <span class="status-badge {{ res.status }}">
+                            {{ res.status|capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if res.status == 'pending' %}
+                            <form action="{{ url_for('manage_reservation_status', reservation_id=res._id, action='confirm') }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn confirm-btn">
+                                    <i class="fas fa-check"></i> Confirmer
+                                </button>
+                            </form>
+                            <form action="{{ url_for('manage_reservation_status', reservation_id=res._id, action='refuse') }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn refuse-btn">
+                                    <i class="fas fa-times"></i> Refuser
+                                </button>
+                            </form>
+                            {% elif res.status == 'confirmed' %}
+                            <form action="{{ url_for('manage_reservation_status', reservation_id=res._id, action='complete') }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn complete-btn">
+                                    <i class="fas fa-check-circle"></i> Terminer
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <p>Aucune réservation récente</p>
+            <a href="{{ url_for('new_reservation') }}" class="dashboard-action-btn">
+                <i class="fas fa-plus-circle"></i> Créer une Réservation
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+<script>
+    // Mettre à jour la date actuelle
+    document.addEventListener('DOMContentLoaded', function() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date();
+        document.querySelector('.current-date').textContent = today.toLocaleDateString('fr-FR', options);
+    });
+</script>
+
 {% endblock %}

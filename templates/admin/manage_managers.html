@@ -1,30 +1,64 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Gérer les Managers</h2>
-<a href="{{ url_for('add_manager') }}" class="btn btn-success mb-3">Ajouter un Manager</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nom d'utilisateur</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for manager in managers %}
-        <tr>
-            <td>{{ manager.username }}</td>
-            <td>
-                <a href="{{ url_for('edit_manager', manager_id=manager._id) }}" class="btn btn-sm btn-warning">Modifier</a>
-                <form action="{{ url_for('delete_manager', manager_id=manager._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce manager?');">
-                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                </form>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="2">Aucun manager trouvé.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="dashboard-container">
+    <div class="managers-container">
+        <!-- En-tête avec titre et bouton d'ajout -->
+        <div class="managers-header">
+            <h1 class="managers-title">Gérer les Managers</h1>
+            <a href="{{ url_for('add_manager') }}" class="add-manager-btn">
+                <i class="fas fa-user-plus"></i> Ajouter un Manager
+            </a>
+        </div>
+        
+        <!-- Tableau des managers avec styles améliorés -->
+        <table class="managers-table">
+            <thead>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Date de création</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for manager in managers %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                                {{ manager.username[0]|upper }}
+                            </div>
+                            <span>{{ manager.username }}</span>
+                        </div>
+                    </td>
+                    <td>{{ manager.email|default('email@example.com') }}</td>
+                    <td>{{ manager.created_at|default('29/05/2025') }}</td>
+                    <td>
+                        <div class="manager-actions">
+                            <a href="{{ url_for('edit_manager', manager_id=manager._id) }}" class="edit-btn">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <form action="{{ url_for('delete_manager', manager_id=manager._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce manager?');">
+                                <button type="submit" class="delete-btn">
+                                    <i class="fas fa-trash-alt"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="empty-state">
+                        <div style="padding: 30px;">
+                            <i class="fas fa-users fa-3x mb-3" style="color: #ccc;"></i>
+                            <p>Aucun manager trouvé.</p>
+                            <p>Commencez par ajouter un nouveau manager en utilisant le bouton ci-dessus.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

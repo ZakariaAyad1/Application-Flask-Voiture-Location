@@ -1,62 +1,78 @@
  {% extends "base.html" %}
- {% block content %}
- <h2>Gestion des Réservations
-     <a href="{{ url_for('new_reservation') }}" class="btn btn-success float-right mb-3">Nouvelle Réservation</a>
- </h2>
- 
- <table class="table table-hover">
-     <thead>
-         <tr>
-             <th>Client</th>
-             <th>Voiture</th>
-             <th>Début</th>
-             <th>Fin</th>
-             <th>Prix Total</th>
-             <th>Statut</th>
-             <th>Actions</th>
-         </tr>
-     </thead>
-     <tbody>
-         {% for reservation in reservations %}
-         <tr>
-             <td>{{ reservation.client_name }}</td>
-             <td>{{ reservation.car_info }}</td>
-             <td>{{ reservation.start_date.strftime('%d-%m-%Y') }}</td>
-             <td>{{ reservation.end_date.strftime('%d-%m-%Y') }}</td>
-             <td>{{ "%.2f"|format(reservation.total_price) }} €</td>
-             <td>
-                 <span class="badge 
-                     {% if reservation.status == 'pending' %}badge-info
-                     {% elif reservation.status == 'confirmed' %}badge-success
-                     {% elif reservation.status == 'refused' %}badge-danger
-                     {% elif reservation.status == 'completed' %}badge-secondary
-                     {% elif reservation.status == 'cancelled' %}badge-dark
-                     {% endif %}">
-                     {{ reservation.status|capitalize }}
-                 </span>
-             </td>
-             <td>
-                 {% if reservation.status == 'pending' %}
-                 <form action="{{ url_for('manage_reservation_status', reservation_id=reservation._id, action='confirm') }}" method="POST" style="display:inline;">
-                     <button type="submit" class="btn btn-sm btn-success">Confirmer</button>
-                 </form>
-                 <form action="{{ url_for('manage_reservation_status', reservation_id=reservation._id, action='refuse') }}" method="POST" style="display:inline;">
-                     <button type="submit" class="btn btn-sm btn-danger">Refuser</button>
-                 </form>
-                 {% elif reservation.status == 'confirmed' %}
-                  <form action="{{ url_for('manage_reservation_status', reservation_id=reservation._id, action='complete') }}" method="POST" style="display:inline;">
-                     <button type="submit" class="btn btn-sm btn-primary">Marquer comme Complétée</button>
-                 </form>
-                 <!-- Option pour annuler une réservation confirmée (plus complexe) -->
-                 {% endif %}
-                 <!-- On pourrait ajouter un bouton "Voir détails" ou "Modifier" (si permis) -->
-             </td>
-         </tr>
-         {% else %}
-         <tr>
-             <td colspan="7">Aucune réservation trouvée.</td>
-         </tr>
-         {% endfor %}
-     </tbody>
- </table>
- {% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <div class="management-container">
+        <!-- En-tête avec titre et bouton d'ajout -->
+        <div class="management-header">
+            <h1 class="management-title">
+                <i class="fas fa-calendar-check"></i> Gestion des Réservations
+            </h1>
+            <a href="{{ url_for('new_reservation') }}" class="add-btn">
+                <i class="fas fa-plus-circle"></i> Nouvelle Réservation
+            </a>
+        </div>
+        
+        <!-- Tableau des réservations -->
+        {% if reservations %}
+        <table class="management-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Voiture</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                    <th>Prix Total</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                    <td><strong>{{ reservation.client_name }}</strong></td>
+                    <td>{{ reservation.car_info }}</td>
+                    <td>{{ reservation.start_date.strftime('%d-%m-%Y') }}</td>
+                    <td>{{ reservation.end_date.strftime('%d-%m-%Y') }}</td>
+                    <td><strong>{{ "%.2f"|format(reservation.total_price) }} €</strong></td>
+                    <td>
+                        <span class="status-badge {{ reservation.status }}">
+                            {{ reservation.status|capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if reservation.status == 'pending' %}
+                            <form action="{{ url_for('manage_reservation_status', reservation_id=reservation._id, action='confirm') }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn confirm-btn">
+                                    <i class="fas fa-check"></i> Confirmer
+                                </button>
+                            </form>
+                            <form action="{{ url_for('manage_reservation_status', reservation_id=reservation._id, action='refuse') }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn refuse-btn">
+                                    <i class="fas fa-times"></i> Refuser
+                                </button>
+                            </form>
+                            {% elif reservation.status == 'confirmed' %}
+                            <form action="{{ url_for('manage_reservation_status', reservation_id=reservation._id, action='complete') }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn complete-btn">
+                                    <i class="fas fa-check-circle"></i> Terminer
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <p>Aucune réservation trouvée.</p>
+            <p>Commencez par créer une nouvelle réservation en utilisant le bouton ci-dessus.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

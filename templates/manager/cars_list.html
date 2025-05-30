@@ -1,69 +1,177 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>
-    {% if public_view %}
-        Voitures Disponibles
-    {% else %}
-        Gestion des Voitures
-        <a href="{{ url_for('add_car') }}" class="btn btn-success float-right mb-3">Ajouter une Voiture</a>
-    {% endif %}
-</h2>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Image</th>
-            <th>Marque</th>
-            <th>Modèle</th>
-            <th>Année</th>
-            <th>Immatriculation</th>
-            <th>Tarif/jour</th>
-            <th>Statut</th>
-            {% if not public_view %}
-                <th>Actions</th>
-            {% endif %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for car in cars %}
-        <tr>
-            <td>
-                {% if car.image_url %}
-                    <img src="{{ car.image_url }}" alt="{{ car.make }} {{ car.model }}" style="width: 100px; height: auto;">
+<div class="dashboard-container">
+    <div class="management-container">
+        <!-- En-tête avec titre et bouton d'ajout -->
+        <div class="management-header">
+            <h1 class="management-title">
+                <i class="fas fa-car"></i>
+                {% if public_view %}
+                Voitures Disponibles
                 {% else %}
-                    Pas d'image
+                Gestion des Voitures
                 {% endif %}
-            </td>
-            <td>{{ car.make }}</td>
-            <td>{{ car.model }}</td>
-            <td>{{ car.year }}</td>
-            <td>{{ car.registration_number }}</td>
-            <td>{{ "%.2f"|format(car.daily_rate) }} €</td>
-            <td>
-                <span class="badge 
-                    {% if car.status == 'available' %}badge-success
-                    {% elif car.status == 'rented' %}badge-warning
-                    {% elif car.status == 'maintenance' %}badge-secondary
-                    {% else %}badge-info
-                    {% endif %}">
-                    {{ car.status|capitalize }}
-                </span>
-            </td>
+            </h1>
             {% if not public_view %}
-            <td>
-                <a href="{{ url_for('edit_car', car_id=car._id) }}" class="btn btn-sm btn-warning">Modifier</a>
-                <form action="{{ url_for('delete_car', car_id=car._id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture?');">
-                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                </form>
-                <!-- Ajouter un lien pour voir les réservations de cette voiture -->
-            </td>
+            <a href="{{ url_for('add_car') }}" class="add-btn">
+                <i class="fas fa-plus-circle"></i> Ajouter une Voiture
+            </a>
             {% endif %}
-        </tr>
+        </div>
+
+        <!-- Tableau des voitures -->
+        {% if cars %}
+        <table class="management-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Marque</th>
+                    <th>Modèle</th>
+                    <th>Année</th>
+                    <th>Immatriculation</th>
+                    <th>Tarif/jour</th>
+                    <th>Statut</th>
+                    {% if not public_view %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>
+                        {% if car.image_url %}
+                        <div class="car-image-cell"
+                            onclick="showImageModal('{{ car.image_url }}', '{{ car.make }} {{ car.model }}')"
+                            style="background-image: url('{{ car.image_url }}');"></div>
+                        {% else %}
+                        <div class="car-image-placeholder">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ car.make }}</td>
+                    <td>{{ car.model }}</td>
+                    <td>{{ car.year }}</td>
+                    <td>{{ car.registration_number }}</td>
+                    <td><strong>{{ "%.2f"|format(car.daily_rate) }} €</strong></td>
+                    <td>
+                        <span class="status-badge {{ car.status }}">
+                            {{ car.status|capitalize }}
+                        </span>
+                    </td>
+                    {% if not public_view %}
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('edit_car', car_id=car._id) }}" class="action-btn edit-btn">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <form action="{{ url_for('delete_car', car_id=car._id) }}" method="POST"
+                                style="display:inline;"
+                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture?');">
+                                <button type="submit" class="action-btn delete-btn">
+                                    <i class="fas fa-trash-alt"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-        <tr>
-            <td colspan="{% if public_view %}7{% else %}8{% endif %}">Aucune voiture trouvée.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-car"></i>
+            <p>Aucune voiture trouvée.</p>
+            {% if not public_view %}
+            <p>Commencez par ajouter une nouvelle voiture en utilisant le bouton ci-dessus.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal pour l'image -->
+<div id="imageModal" class="modal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="modalImage">
+    <div id="imageCaption"></div>
+</div>
+
+<style>
+    .car-image-cell {
+        width: 100px;
+        height: 75px;
+        background-size: cover;
+        background-position: center;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+
+    .car-image-cell:hover {
+        transform: scale(1.1);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 80vh;
+    }
+
+    #imageCaption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        text-align: center;
+        color: white;
+        padding: 10px 0;
+    }
+
+    .close-modal {
+        position: absolute;
+        right: 25px;
+        top: 10px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    function showImageModal(src, caption) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const captionText = document.getElementById('imageCaption');
+
+        modal.style.display = "block";
+        modalImg.src = src;
+        captionText.innerHTML = caption;
+    }
+
+    document.querySelector('.close-modal').onclick = function () {
+        document.getElementById('imageModal').style.display = "none";
+    }
+
+    document.getElementById('imageModal').onclick = function (e) {
+        if (e.target === this) {
+            this.style.display = "none";
+        }
+    }
+</script>
 {% endblock %}

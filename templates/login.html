@@ -1,19 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2>Connexion</h2>
-        <form method="POST" action="{{ url_for('login') }}">
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+<div class="login-container">
+    <!-- Titre avec effet de soulignement -->
+    <h1 class="login-title">Connexion</h1>
+    
+    <!-- Formulaire de connexion avec icônes -->
+    <form method="POST" action="{{ url_for('login') }}" class="login-form">
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <div class="position-relative">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control form-control-with-icon" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
             </div>
-            <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <div class="position-relative">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-control form-control-with-icon" id="password" name="password" placeholder="Entrez votre mot de passe" required>
             </div>
-            <button type="submit" class="btn btn-primary">Se connecter</button>
-        </form>
+        </div>
+        
+        <!-- Bouton de connexion avec effet de survol -->
+        <button type="submit" class="login-btn">
+            <i class="fas fa-sign-in-alt mr-2"></i> Se connecter
+        </button>
+    </form>
+    
+    <!-- Pied de page optionnel -->
+    <div class="login-footer">
+        <p>Agence Auto Premium 2025 - Tous droits réservés</p>
     </div>
 </div>
 {% endblock %}

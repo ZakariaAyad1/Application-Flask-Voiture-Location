@@ -1,44 +1,172 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{% if action == 'add' %}Ajouter une Voiture{% else %}Modifier la Voiture{% endif %}</h2>
-<form method="POST" action="{% if action == 'add' %}{{ url_for('add_car') }}{% else %}{{ url_for('edit_car', car_id=car._id) }}{% endif %}">
-    <div class="form-row">
-        <div class="form-group col-md-6">
-            <label for="make">Marque</label>
-            <input type="text" class="form-control" id="make" name="make" value="{{ car.make if car else '' }}" required>
-        </div>
-        <div class="form-group col-md-6">
-            <label for="model">Modèle</label>
-            <input type="text" class="form-control" id="model" name="model" value="{{ car.model if car else '' }}" required>
-        </div>
+<div class="dashboard-container">
+    <div class="client-form-container">
+        <!-- Titre avec icône -->
+        <h1 class="client-form-title">
+            <i class="fas {% if action == 'add' %}fa-car-plus{% else %}fa-car-alt{% endif %}"></i>
+            {% if action == 'add' %}Ajouter une Nouvelle Voiture{% else %}Modifier la Voiture{% endif %}
+        </h1>
+
+        <!-- Formulaire avec styles améliorés -->
+        <form method="POST"
+            action="{% if action == 'add' %}{{ url_for('add_car') }}{% else %}{{ url_for('edit_car', car_id=car._id) }}{% endif %}"
+            class="client-form" enctype="multipart/form-data">
+            <!-- Première ligne : Marque et Modèle -->
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="make">Marque</label>
+                    <div class="position-relative">
+                        <i class="fas fa-trademark input-icon"></i>
+                        <input type="text" class="form-control form-control-with-icon" id="make" name="make"
+                            value="{{ car.make if car else '' }}" placeholder="Ex: Renault, Peugeot, BMW..." required>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="model">Modèle</label>
+                    <div class="position-relative">
+                        <i class="fas fa-car-side input-icon"></i>
+                        <input type="text" class="form-control form-control-with-icon" id="model" name="model"
+                            value="{{ car.model if car else '' }}" placeholder="Ex: Clio, 308, Serie 3..." required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deuxième ligne : Année, Immatriculation et Tarif -->
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="year">Année</label>
+                    <div class="position-relative">
+                        <i class="fas fa-calendar-alt input-icon"></i>
+                        <input type="number" class="form-control form-control-with-icon" id="year" name="year"
+                            value="{{ car.year if car else '' }}" min="1900" max="{{ now.year if now else 2024 }}"
+                            placeholder="Ex: 2022" required>
+                    </div>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="registration_number">Immatriculation</label>
+                    <div class="position-relative">
+                        <i class="fas fa-id-card input-icon"></i>
+                        <input type="text" class="form-control form-control-with-icon" id="registration_number"
+                            name="registration_number" value="{{ car.registration_number if car else '' }}"
+                            placeholder="Ex: AB-123-CD" required>
+                    </div>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="daily_rate">Tarif Journalier (€)</label>
+                    <div class="position-relative">
+                        <i class="fas fa-euro-sign input-icon"></i>
+                        <input type="number" step="0.01" class="form-control form-control-with-icon" id="daily_rate"
+                            name="daily_rate" value="{{ car.daily_rate if car else '' }}" placeholder="Ex: 50.00"
+                            required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statut -->
+            <div class="form-group">
+                <label for="status">Statut</label>
+                <div class="position-relative">
+                    <i class="fas fa-info-circle input-icon"></i>
+                    <select class="form-control form-control-with-icon" id="status" name="status">
+                        <option value="available" {% if car and car.status=='available' %}selected{% endif %}>Disponible
+                        </option>
+                        <option value="rented" {% if car and car.status=='rented' %}selected{% endif %}>Louée</option>
+                        <option value="maintenance" {% if car and car.status=='maintenance' %}selected{% endif %}>En
+                            Maintenance</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- URL de l'image -->
+            <div class="form-group">
+                <label for="image_url">URL de l'image (optionnel)</label>
+                <div class="position-relative">
+                    <i class="fas fa-image input-icon"></i>
+                    <input type="url" class="form-control form-control-with-icon" id="image_url" name="image_url"
+                        value="{{ car.image_url if car and car.image_url else '' }}"
+                        placeholder="https://exemple.com/image-voiture.jpg">
+                </div>
+                <small class="form-text text-muted">Entrez l'URL d'une image de la voiture pour l'afficher dans les
+                    listings.</small>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-group">
+                <label for="car_image">Image de la voiture</label>
+                <div class="image-upload-container">
+                    <div class="image-preview" id="imagePreview">
+                        {% if car and car.image_url %}
+                        <img src="{{ car.image_url }}" alt="Aperçu">
+                        {% else %}
+                        <div class="no-image">
+                            <i class="fas fa-camera"></i>
+                            <span>Aucune image</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <input type="file" class="form-control" id="car_image" name="car_image" accept="image/*"
+                        onchange="previewImage(this)">
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="form-buttons">
+                <button type="submit" class="client-btn">
+                    <i class="fas {% if action == 'add' %}fa-plus-circle{% else %}fa-save{% endif %}"></i>
+                    {% if action == 'add' %}Ajouter la Voiture{% else %}Mettre à jour{% endif %}
+                </button>
+                <a href="{{ url_for('list_cars') }}" class="cancel-client-btn">
+                    <i class="fas fa-times-circle"></i> Annuler
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-4">
-            <label for="year">Année</label>
-            <input type="number" class="form-control" id="year" name="year" value="{{ car.year if car else '' }}" min="1900" max="{{ now.year if now else 2024 }}" required>
-        </div>
-        <div class="form-group col-md-4">
-            <label for="registration_number">Immatriculation</label>
-            <input type="text" class="form-control" id="registration_number" name="registration_number" value="{{ car.registration_number if car else '' }}" required>
-        </div>
-        <div class="form-group col-md-4">
-            <label for="daily_rate">Tarif Journalier (€)</label>
-            <input type="number" step="0.01" class="form-control" id="daily_rate" name="daily_rate" value="{{ car.daily_rate if car else '' }}" required>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="status">Statut</label>
-        <select class="form-control" id="status" name="status">
-            <option value="available" {% if car and car.status == 'available' %}selected{% endif %}>Disponible</option>
-            <option value="rented" {% if car and car.status == 'rented' %}selected{% endif %}>Louée</option>
-            <option value="maintenance" {% if car and car.status == 'maintenance' %}selected{% endif %}>En Maintenance</option>
-        </select>
-    </div>
-     <div class="form-group">
-         <label for="image_url">URL de l'image (optionnel)</label>
-         <input type="url" class="form-control" id="image_url" name="image_url" value="{{ car.image_url if car and car.image_url else '' }}">
-     </div>
-    <button type="submit" class="btn btn-primary">{% if action == 'add' %}Ajouter{% else %}Mettre à jour{% endif %}</button>
-    <a href="{{ url_for('list_cars') }}" class="btn btn-secondary">Annuler</a>
-</form>
+</div>
+
+<style>
+    .image-upload-container {
+        margin: 15px 0;
+    }
+
+    .image-preview {
+        width: 200px;
+        height: 150px;
+        border: 2px dashed #ccc;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .no-image {
+        text-align: center;
+        color: #999;
+    }
+
+    .no-image i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu">`;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
 {% endblock %}
